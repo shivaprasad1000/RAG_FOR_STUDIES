@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Assistant - Your AI Study Companion</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="header-main">
+                    <h1>📚 Study Assistant</h1>
+                    <p class="subtitle">Your AI-powered study companion for exam preparation</p>
+                    <div class="feature-badges">
+                        <span class="badge">📄 PDF Upload</span>
+                        <span class="badge">🔍 Smart Search</span>
+                        <span class="badge">💡 AI Answers</span>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="header-btn" onclick="showPreferences()" title="Study Preferences">
+                        ⚙️ Preferences
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- Quick Start Guide -->
+            <section class="guide-section" id="guideSection">
+                <h2>🚀 Quick Start</h2>
+                <div class="guide-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h3>Upload PDFs</h3>
+                            <p>Drag and drop your textbooks, notes, or study materials</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3>Ask Questions</h3>
+                            <p>Type your study questions in natural language</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h3>Get Smart Answers</h3>
+                            <p>Receive detailed answers with source references</p>
+                        </div>
+                    </div>
+                </div>
+                <button class="hide-guide-btn" onclick="toggleGuide()">Hide Guide</button>
+            </section>
+
+            <!-- Upload Section -->
+            <section class="upload-section" aria-labelledby="upload-heading">
+                <div class="section-header">
+                    <h2 id="upload-heading">📤 Upload Study Materials</h2>
+                    <p class="section-description">Upload PDF textbooks, notes, or study guides (max 50MB)</p>
+                </div>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📁</div>
+                    <h3>Drop your PDF files here</h3>
+                    <p>or <span class="upload-link">click to browse</span></p>
+                    <div class="upload-requirements">
+                        <small>✓ PDF format only • ✓ Max 50MB • ✓ Multiple files supported</small>
+                    </div>
+                    <input type="file" id="fileInput" accept=".pdf" multiple style="display: none;" aria-label="Select PDF files to upload">
+                </div>
+                <div id="uploadStatus"></div>
+                <div id="uploadProgress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p id="progressText">Processing...</p>
+                </div>
+            </section>
+
+            <!-- Documents Section -->
+            <section class="documents-section" aria-labelledby="documents-heading">
+                <div class="section-header">
+                    <h2 id="documents-heading">📚 Your Study Library</h2>
+                    <p class="section-description">Manage your uploaded documents and study materials</p>
+                </div>
+                <div class="documents-controls">
+                    <div class="search-box">
+                        <input type="text" id="documentSearch" placeholder="Search documents..." aria-label="Search uploaded documents" />
+                        <span class="search-icon">🔍</span>
+                    </div>
+                    <div class="document-stats" id="documentStats">
+                        <span>0 documents</span>
+                    </div>
+                </div>
+                <div id="documentsList" class="documents-grid">
+                    <div class="empty-state">
+                        <div class="empty-icon">📖</div>
+                        <h3>No documents uploaded yet</h3>
+                        <p>Upload your first PDF to get started with AI-powered studying</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Document Tagging Modal -->
+            <div id="tagModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>🏷️ Manage Document Tags</h3>
+                        <button class="close-btn" onclick="closeModal('tagModal')">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="tag-section">
+                            <h4 id="tagDocumentName">Document Name</h4>
+                            <div class="tag-input-section">
+                                <input type="text" id="newTagInput" placeholder="Add a tag (e.g., Math, Biology, Chapter 1)" />
+                                <button onclick="addTag()" class="primary-btn">Add Tag</button>
+                            </div>
+                            <div class="current-tags">
+                                <h5>Current Tags:</h5>
+                                <div id="currentTags" class="tag-list">
+                                    <!-- Tags will be populated here -->
+                                </div>
+                            </div>
+                            <div class="suggested-tags">
+                                <h5>Suggested Tags:</h5>
+                                <div class="tag-suggestions">
+                                    <button class="tag-suggestion" onclick="addSuggestedTag('Math')">Math</button>
+                                    <button class="tag-suggestion" onclick="addSuggestedTag('Science')">Science</button>
+                                    <button class="tag-suggestion" onclick="addSuggestedTag('History')">History</button>
+                                    <button class="tag-suggestion" onclick="addSuggestedTag('Literature')">Literature</button>
+                                    <button class="tag-suggestion" onclick="addSuggestedTag('Chapter 1')">Chapter 1</button>
+                                    <button class="tag-suggestion" onclick="addSuggestedTag('Exam Prep')">Exam Prep</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-actions">
+                            <button onclick="saveDocumentTags()" class="primary-btn">Save Tags</button>
+                            <button onclick="closeModal('tagModal')" class="secondary-btn">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Study Preferences Modal -->
+            <div id="preferencesModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>⚙️ Study Preferences</h3>
+                        <button class="close-btn" onclick="closeModal('preferencesModal')">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="preference-section">
+                            <h4>Response Style</h4>
+                            <div class="preference-options">
+                                <label class="preference-option">
+                                    <input type="radio" name="responseStylePref" value="brief" />
+                                    <div class="option-content">
+                                        <strong>Brief</strong>
+                                        <p>Quick, concise answers for fast review</p>
+                                    </div>
+                                </label>
+                                <label class="preference-option">
+                                    <input type="radio" name="responseStylePref" value="detailed" checked />
+                                    <div class="option-content">
+                                        <strong>Detailed</strong>
+                                        <p>Comprehensive explanations with examples</p>
+                                    </div>
+                                </label>
+                                <label class="preference-option">
+                                    <input type="radio" name="responseStylePref" value="comprehensive" />
+                                    <div class="option-content">
+                                        <strong>Comprehensive</strong>
+                                        <p>In-depth analysis with multiple perspectives</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="preference-section">
+                            <h4>Answer Detail Level</h4>
+                            <div class="preference-group">
+                                <label for="maxChunksPref">Number of sources to use:</label>
+                                <select id="maxChunksPref">
+                                    <option value="2">2 sources (faster)</option>
+                                    <option value="3" selected>3 sources (balanced)</option>
+                                    <option value="4">4 sources (thorough)</option>
+                                    <option value="5">5 sources (comprehensive)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="preference-section">
+                            <h4>Study Focus</h4>
+                            <div class="preference-group">
+                                <label>
+                                    <input type="checkbox" id="highlightKeyTerms" checked />
+                                    Highlight key terms and concepts
+                                </label>
+                            </div>
+                            <div class="preference-group">
+                                <label>
+                                    <input type="checkbox" id="includeExamples" checked />
+                                    Include examples when available
+                                </label>
+                            </div>
+                            <div class="preference-group">
+                                <label>
+                                    <input type="checkbox" id="showPageReferences" checked />
+                                    Show page references for easy lookup
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="modal-actions">
+                            <button onclick="saveStudyPreferences()" class="primary-btn">Save Preferences</button>
+                            <button onclick="resetPreferences()" class="secondary-btn">Reset to Defaults</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </section>
+
+            <!-- Query Section -->
+            <section class="query-section" aria-labelledby="query-heading">
+                <div class="section-header">
+                    <h2 id="query-heading">💬 Ask Study Questions</h2>
+                    <p class="section-description">Get instant answers from your study materials</p>
+                </div>
+                
+                <!-- Study Preferences -->
+                <div class="study-preferences">
+                    <div class="preference-group">
+                        <label for="responseStyle">Response Style:</label>
+                        <select id="responseStyle">
+                            <option value="detailed">Detailed Explanation</option>
+                            <option value="brief">Brief Summary</option>
+                            <option value="comprehensive">Comprehensive Analysis</option>
+                        </select>
+                    </div>
+                    <div class="preference-group">
+                        <label for="maxChunks">Sources to Use:</label>
+                        <select id="maxChunks">
+                            <option value="2">2 sources</option>
+                            <option value="3" selected>3 sources</option>
+                            <option value="4">4 sources</option>
+                            <option value="5">5 sources</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Question Examples -->
+                <div class="question-examples">
+                    <h4>💡 Example Questions:</h4>
+                    <div class="example-tags">
+                        <button class="example-tag" onclick="setExampleQuestion('What are the key concepts in chapter 3?')">Key Concepts</button>
+                        <button class="example-tag" onclick="setExampleQuestion('Explain the main differences between X and Y')">Compare & Contrast</button>
+                        <button class="example-tag" onclick="setExampleQuestion('Give me a summary of the important formulas')">Formulas</button>
+                        <button class="example-tag" onclick="setExampleQuestion('What are some practice problems for this topic?')">Practice Problems</button>
+                    </div>
+                </div>
+
+                <div class="question-form">
+                    <div class="question-input-container">
+                        <label for="questionInput" class="sr-only">Enter your study question</label>
+                        <textarea 
+                            id="questionInput" 
+                            placeholder="Ask me anything about your study materials... 
+                            
+Examples:
+• What are the main themes in chapter 5?
+• Explain photosynthesis in simple terms
+• Give me practice questions on calculus derivatives
+• Summarize the key points about World War II"
+                            rows="4"
+                            aria-label="Enter your study question"
+                        ></textarea>
+                        <div class="input-actions">
+                            <button id="clearButton" class="secondary-btn">Clear</button>
+                            <button id="askButton" class="primary-btn">
+                                <span class="btn-text">Ask Question</span>
+                                <span class="btn-loading" style="display: none;">
+                                    <span class="spinner"></span>
+                                    Processing...
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Answer Section -->
+                <div id="answerSection" class="answer-section" style="display: none;">
+                    <div class="answer-header">
+                        <h3>💡 Answer</h3>
+                        <div class="answer-actions">
+                            <button class="action-btn" onclick="copyAnswer()">📋 Copy</button>
+                            <button class="action-btn" onclick="saveAnswer()">💾 Save</button>
+                        </div>
+                    </div>
+                    <div id="answerContent" class="answer-content"></div>
+                    <div id="sourcesContent" class="sources-content"></div>
+                    <div id="processingTime" class="processing-time"></div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer>
+            <div class="footer-content">
+                <p>Study Assistant - Powered by AI • Built for Students</p>
+                <div class="footer-links">
+                    <a href="#" onclick="showHelp()">Help</a>
+                    <a href="#" onclick="showAbout()">About</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h3>Processing your request...</h3>
+            <p id="loadingMessage">Please wait while we analyze your documents</p>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="helpModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📖 How to Use Study Assistant</h3>
+                <button class="close-btn" onclick="closeModal('helpModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="help-section">
+                    <h4>Getting Started</h4>
+                    <ul>
+                        <li>Upload PDF textbooks, notes, or study materials</li>
+                        <li>Wait for processing to complete</li>
+                        <li>Ask questions in natural language</li>
+                        <li>Get detailed answers with source references</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h4>Tips for Better Results</h4>
+                    <ul>
+                        <li>Be specific in your questions</li>
+                        <li>Use clear, complete sentences</li>
+                        <li>Try different response styles for different needs</li>
+                        <li>Check source references for more context</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
