@@ -11,7 +11,7 @@ A complete Retrieval-Augmented Generation (RAG) system designed specifically for
 - 🏷️ **Document Organization**: Tag and categorize your study materials by subject
 - ⚙️ **Customizable Responses**: Choose between brief, detailed, or comprehensive answer styles
 - ⚡ **Fast Local Processing**: Works offline with local embeddings (no API costs required)
-- 🤖 **Optional AI Enhancement**: Integrate with OpenAI for enhanced answer generation
+- 🤖 **Optional AI Enhancement**: Integrate with Gemini or OpenAI for enhanced answer generation
 
 ## 🚀 Quick Start
 
@@ -109,8 +109,11 @@ study-assistant/
 ### Environment Variables
 
 ```bash
-# Optional: Enhanced AI answers (requires OpenAI account)
-export OPENAI_API_KEY="your-api-key-here"
+# Option 1: Gemini API (Recommended - Free tier available)
+export GEMINI_API_KEY="your-gemini-api-key-here"
+
+# Option 2: OpenAI API (Alternative - Paid service)
+export OPENAI_API_KEY="your-openai-api-key-here"
 
 # Optional: Custom model settings
 export EMBEDDING_MODEL="all-MiniLM-L6-v2"
@@ -199,19 +202,33 @@ gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-### Docker Deployment (Optional)
+### 🐳 Docker Deployment (Recommended)
 
-```dockerfile
-FROM python:3.9-slim
+#### Quick Start with Docker
 
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+```bash
+# 1. Set up environment variables (optional but recommended)
+cp .env.example .env
+# Edit .env and add your GEMINI_API_KEY
 
-COPY . .
-EXPOSE 8000
+# 2. Build and run with Docker
+docker-compose up --build
+```
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+#### Docker Commands
+
+```bash
+# Build the image
+./docker-build.sh  # or docker-build.bat on Windows
+
+# Run with docker-compose (recommended)
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop the application
+docker-compose down
 ```
 
 ## 🔍 API Documentation

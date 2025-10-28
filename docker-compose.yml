@@ -11,8 +11,9 @@ services:
       - ./data:/app/data
       - ./uploads:/app/uploads
     environment:
-      # Optional: Add OpenAI API key for enhanced answers
+      # Optional: Add API keys for enhanced answers
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
       # Optional: Custom configuration
       - EMBEDDING_MODEL=all-MiniLM-L6-v2
       - CHUNK_SIZE=800

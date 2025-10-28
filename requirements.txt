@@ -15,7 +15,7 @@ torch>=1.9.0
 transformers>=4.21.0
 
 # Vector search
-faiss-cpu==1.8.0
+faiss-cpu>=1.9.0
 numpy>=1.21.0
 
 # Data models and validation
@@ -23,6 +23,7 @@ pydantic==2.5.0
 
 # Optional: Enhanced answer generation
 openai==1.3.0
+google-generativeai>=0.3.0
 
 # Security (if needed for future features)
 python-jose[cryptography]==3.3.0

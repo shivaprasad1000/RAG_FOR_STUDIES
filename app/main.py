@@ -52,7 +52,21 @@ logger = logging.getLogger(__name__)
 pdf_processor = PDFProcessor()
 embedding_generator = EmbeddingGenerator()
 vector_store = VectorStore(embedding_dimension=384)  # all-MiniLM-L6-v2 dimension
-answer_generator = AnswerGenerator()
+
+# Initialize answer generator with environment-based configuration
+from .answer_generator import AnswerConfig, LLMProvider
+llm_provider = os.getenv("LLM_PROVIDER", "gemini").lower()
+model_name = os.getenv("MODEL_NAME", "gemini-1.5-flash" if llm_provider == "gemini" else "gpt-3.5-turbo")
+max_tokens = int(os.getenv("MAX_TOKENS", "500"))
+temperature = float(os.getenv("TEMPERATURE", "0.3"))
+
+config = AnswerConfig(
+    provider=LLMProvider(llm_provider),
+    model_name=model_name,
+    max_tokens=max_tokens,
+    temperature=temperature
+)
+answer_generator = AnswerGenerator(config)
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):

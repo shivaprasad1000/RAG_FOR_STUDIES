@@ -19,13 +19,14 @@ logger = logging.getLogger(__name__)
 class LLMProvider(str, Enum):
     """Supported LLM providers."""
     OPENAI = "openai"
+    GEMINI = "gemini"
     LOCAL = "local"  # For future Ollama integration
 
 @dataclass
 class AnswerConfig:
     """Configuration for answer generation."""
-    provider: LLMProvider = LLMProvider.OPENAI
-    model_name: str = "gpt-3.5-turbo"
+    provider: LLMProvider = LLMProvider.GEMINI
+    model_name: str = "gemini-1.5-flash"
     max_tokens: int = 500
     temperature: float = 0.3
     api_key: Optional[str] = None
@@ -50,6 +51,8 @@ class AnswerGenerator:
         # Initialize the appropriate client
         if self.config.provider == LLMProvider.OPENAI:
             self._init_openai_client()
+        elif self.config.provider == LLMProvider.GEMINI:
+            self._init_gemini_client()
     
     def _init_openai_client(self):
         """Initialize OpenAI client."""
@@ -71,6 +74,28 @@ class AnswerGenerator:
         except Exception as e:
             logger.error(f"Failed to initialize OpenAI client: {str(e)}")
             raise RuntimeError(f"OpenAI initialization failed: {str(e)}")
+    
+    def _init_gemini_client(self):
+        """Initialize Gemini client."""
+        try:
+            import google.generativeai as genai
+            
+            # Get API key from config or environment
+            api_key = self.config.api_key or os.getenv("GEMINI_API_KEY")
+            if not api_key:
+                logger.warning("Gemini API key not found. Set GEMINI_API_KEY environment variable.")
+                return
+            
+            genai.configure(api_key=api_key)
+            self._client = genai.GenerativeModel(self.config.model_name)
+            logger.info("Gemini client initialized successfully")
+            
+        except ImportError:
+            logger.error("Google Generative AI library not installed. Run: pip install google-generativeai")
+            raise RuntimeError("Google Generative AI library not available")
+        except Exception as e:
+            logger.error(f"Failed to initialize Gemini client: {str(e)}")
+            raise RuntimeError(f"Gemini initialization failed: {str(e)}")
     
     def _create_study_prompt(self, question: str, context_chunks: List[str], 
                            response_style: ResponseStyle) -> str:
@@ -269,18 +294,34 @@ Please provide a well-formatted, study-focused answer based on the materials abo
             # Create study-focused prompt
             prompt = self._create_study_prompt(question, context_chunks, response_style)
             
-            # Generate answer using OpenAI
-            response = self._client.chat.completions.create(
-                model=self.config.model_name,
-                messages=[
-                    {"role": "system", "content": "You are a helpful study assistant for students."},
-                    {"role": "user", "content": prompt}
-                ],
-                max_tokens=self.config.max_tokens,
-                temperature=self.config.temperature
-            )
-            
-            raw_answer = response.choices[0].message.content.strip()
+            # Generate answer using the configured LLM provider
+            if self.config.provider == LLMProvider.OPENAI:
+                response = self._client.chat.completions.create(
+                    model=self.config.model_name,
+                    messages=[
+                        {"role": "system", "content": "You are a helpful study assistant for students."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=self.config.max_tokens,
+                    temperature=self.config.temperature
+                )
+                raw_answer = response.choices[0].message.content.strip()
+                
+            elif self.config.provider == LLMProvider.GEMINI:
+                # Configure generation parameters for Gemini
+                generation_config = {
+                    "temperature": self.config.temperature,
+                    "max_output_tokens": self.config.max_tokens,
+                }
+                
+                response = self._client.generate_content(
+                    prompt,
+                    generation_config=generation_config
+                )
+                raw_answer = response.text.strip()
+                
+            else:
+                raise ValueError(f"Unsupported LLM provider: {self.config.provider}")
             
             # Format the answer with study-friendly enhancements
             formatted_answer = self._format_study_answer(raw_answer, sources)
